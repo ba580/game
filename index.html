@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hockey Ref: Linesman Challenge</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07111f;color:#fff;font-family:Arial,sans-serif;display:flex;justify-content:center;min-height:100vh}
+#wrap{width:min(100%,1000px);padding:18px}h1{text-align:center;margin:4px 0 8px}.sub{text-align:center;color:#a9bdd4;margin-bottom:12px}
+#hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}.box{background:#102238;border:1px solid #28435f;border-radius:10px;padding:8px 14px}
+canvas{width:100%;height:auto;display:block;background:#dcebf5;border:4px solid #fff;border-radius:12px;box-shadow:0 12px 35px #0008}
+#controls{text-align:center;color:#b9c8d8;margin-top:10px}button{display:block;margin:12px auto 0;padding:11px 18px;border:0;border-radius:9px;background:#28a66f;color:white;font-weight:700;cursor:pointer}
+#message{text-align:center;min-height:24px;margin-top:10px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="wrap">
+<h1>🏒 Hockey Ref: Linesman Challenge</h1>
+<div class="sub">Make the right offside calls before the clock hits zero.</div>
+<div id="hud">
+<div class="box">Score: <b id="score">0</b></div>
+<div class="box">Correct: <b id="correct">0</b></div>
+<div class="box">Wrong: <b id="wrong">0</b></div>
+<div class="box">Time: <b id="time">60</b>s</div>
+<div class="box">Level: <b id="level">1</b></div>
+</div>
+<canvas id="game" width="900" height="500" aria-label="Hockey rink game"></canvas>
+<div id="controls">Press <b>O</b> for OFFSIDE or <b>G</b> for GOOD. You can also click the buttons below.</div>
+<button id="restart" type="button">Start / Restart Game</button>
+<div id="message">Click Start to begin.</div>
+</div>
+<script>
+const c=document.getElementById('game'),ctx=c.getContext('2d');
+const scoreEl=document.getElementById('score'),correctEl=document.getElementById('correct'),wrongEl=document.getElementById('wrong'),timeEl=document.getElementById('time'),levelEl=document.getElementById('level'),msg=document.getElementById('message');
+let running=false,score=0,correct=0,wrong=0,time=60,level=1,play=null,timer=null,frame=null,last=0;
+
+function rand(a,b){return a+Math.random()*(b-a)}
+function resetStats(){score=0;correct=0;wrong=0;time=60;level=1;update()}
+function update(){scoreEl.textContent=score;correctEl.textContent=correct;wrongEl.textContent=wrong;timeEl.textContent=Math.ceil(time);levelEl.textContent=level}
+function newPlay(){
+  const puckX=rand(300,690);
+  const defendingBlue=puckX>450;
+  const puck={x:puckX,y:250};
+  const playerX=rand(250,700);
+  // If attacking team is moving right, blue line is 650; if moving left, blue line is 250.
+  const direction=Math.random()<.5?1:-1;
+  const line=direction===1?650:250;
+  const teammateX=rand(300,600);
+  // Offside means attacking player is across the blue line before puck.
+  const offside=direction===1 ? (playerX>line && puck.x<line) : (playerX<line && puck.x>line);
+  play={direction,line,puck,playerX,teammateX,offside};
+}
+function draw(){
+  ctx.clearRect(0,0,900,500);
+  ctx.fillStyle='#e7f3fa';ctx.fillRect(0,0,900,500);
+  // boards
+  ctx.strokeStyle='#d22';ctx.lineWidth=10;ctx.strokeRect(8,8,884,484);
+  // zones
+  ctx.fillStyle='#cfe4f0';ctx.fillRect(20,20,860,460);
+  ctx.fillStyle='#b6d4e5';ctx.fillRect(410,20,80,460);
+  // blue lines
+  ctx.fillStyle='#2c66c9';ctx.fillRect(245,20,10,460);ctx.fillRect(645,20,10,460);
+  // center line
+  ctx.fillStyle='#d33';ctx.fillRect(447,20,6,460);
+  // faceoff circles
+  ctx.strokeStyle='#d33';ctx.lineWidth=3;
+  for(const x of [160,740]) for(const y of [145,355]){ctx.beginPath();ctx.arc(x,y,55,0,Math.PI*2);ctx.stroke()}
+  ctx.beginPath();ctx.arc(450,250,55,0,Math.PI*2);ctx.stroke();
+  // nets
+  ctx.strokeStyle='#b44';ctx.lineWidth=7;ctx.strokeRect(20,190,25,120);ctx.strokeRect(855,190,25,120);
+  if(!play)return;
+  // puck
+  ctx.fillStyle='#111';ctx.beginPath();ctx.arc(play.puck.x,play.puck.y,9,0,Math.PI*2);ctx.fill();
+  // players
+  function player(x,y,team){
+    ctx.fillStyle=team?'#174ea6':'#c62828';ctx.beginPath();ctx.arc(x,y,18,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText(team?'A':'D',x,y+4);
+  }
+  const y=250;
+  player(play.playerX,y,true);player(play.teammateX,y+65,true);
+  player(play.direction===1?820:80,150,false);player(play.direction===1?820:80,350,false);
+  ctx.fillStyle='#183047';ctx.font='bold 15px Arial';ctx.textAlign='center';
+  ctx.fillText('BLUE LINE',play.line,42);
+  ctx.font='13px Arial';ctx.fillText('PUCK',play.puck.x,235);
+}
+function answer(choice){
+ if(!running||!play)return;
+ const ok=(choice==='offside')===play.offside;
+ if(ok){correct++;score+=100+level*20;msg.textContent='✅ Correct call!';msg.style.color='#16864f'}
+ else{wrong++;score=Math.max(0,score-75);msg.textContent='❌ Wrong call — watch the puck first.';msg.style.color='#b51d1d'}
+ if(correct%5===0)level=Math.min(9,1+Math.floor(correct/5));
+ update();newPlay();draw();
+}
+function start(){
+ cancelAnimationFrame(frame);clearInterval(timer);resetStats();running=true;newPlay();msg.textContent='Make the call!';msg.style.color='';last=performance.now();
+ timer=setInterval(()=>{time-=1;if(time<=0){time=0;running=false;clearInterval(timer);msg.textContent=`🏁 Final score: ${score}. Correct calls: ${correct}/${correct+wrong}.`;msg.style.color='#fff'}update()},1000);
+ function loop(t){if(!running)return; if(t-last>9000/level){newPlay();last=t;draw()} frame=requestAnimationFrame(loop)}
+ frame=requestAnimationFrame(loop);draw();
+}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key.toLowerCase()==='o')answer('offside');if(e.key.toLowerCase()==='g')answer('good');if(e.key==='Enter'&&!running)start()});
+document.getElementById('restart').addEventListener('click',start);
+draw();
+</script>
+</body>
+</html>
