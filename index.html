@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hockey Official: Road to the Show</title>
+<style>
+:root{--bg:#07111f;--panel:#0e1b2b;--panel2:#13243a;--text:#f5f7fb;--muted:#9db0c7;--accent:#36c98f;--red:#ef5350;--gold:#f5c451}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#12253c,#050b14 65%);color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100vh}
+button{font:inherit}#app{width:min(1180px,96%);margin:auto;padding:20px 0 35px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:15px}
+.logo h1{margin:0;font-size:clamp(25px,4vw,40px)}.logo p{margin:5px 0;color:var(--muted)}
+.topstats{display:flex;gap:8px;flex-wrap:wrap}.pill{background:var(--panel);border:1px solid #213b58;border-radius:12px;padding:9px 13px}.pill b{display:block;font-size:17px}.pill span{font-size:11px;color:var(--muted)}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{background:var(--panel);color:var(--muted);border:1px solid #213b58;border-radius:10px;padding:10px 15px;cursor:pointer;white-space:nowrap}.tab.active,.tab:hover{color:white;border-color:var(--accent);background:#102b2a}
+.panel{background:rgba(14,27,43,.94);border:1px solid #203953;border-radius:16px;padding:18px;box-shadow:0 14px 40px #0005}.hidden{display:none}
+h2{margin:0 0 6px}h3{margin:0 0 8px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:1.5fr .9fr;gap:14px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.card{background:var(--panel2);border:1px solid #25425f;border-radius:12px;padding:14px}.card .big{font-size:28px;font-weight:800}.card small{color:var(--muted)}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;background:#1d3651;color:white}.btn.primary{background:var(--accent);color:#062018}.btn.red{background:var(--red)}.btn.gold{background:var(--gold);color:#211a05}.btn:disabled{opacity:.45;cursor:not-allowed}
+.list{display:grid;gap:8px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#0b1726;border:1px solid #1e344c;border-radius:10px;padding:11px}.row strong{display:block}.row small{color:var(--muted)}
+.progress{height:9px;background:#07111d;border-radius:99px;overflow:hidden;border:1px solid #20364d}.progress i{display:block;height:100%;background:var(--accent)}
+#rink{width:100%;height:auto;border-radius:15px;border:4px solid white;background:#dcecf5;display:block}
+.gamebar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.score{font-size:26px;font-weight:900}.callbox{background:#081522;border:1px solid #25425f;border-radius:11px;padding:10px 14px;text-align:center}
+.callbox b{display:block;font-size:20px}.callbox span{font-size:11px;color:var(--muted)}
+.callbuttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.callbuttons button{min-height:52px}
+.feed{height:160px;overflow:auto;background:#081522;border:1px solid #1e344c;border-radius:10px;padding:10px;font-size:13px}.feed div{padding:5px 0;border-bottom:1px solid #14273a}
+.controls{color:var(--muted);font-size:13px;margin-top:8px}.badge{display:inline-block;padding:4px 7px;border-radius:999px;background:#17304a;font-size:11px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.callbuttons{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.cards{grid-template-columns:1fr}.topstats{width:100%}.pill{flex:1}}
+</style>
+</head>
+<body>
+<div id="app">
+<header class="top">
+<div class="logo"><h1>🏒 Road to the Show</h1><p>Hockey Official Career Simulator</p></div>
+<div class="topstats">
+<div class="pill"><b id="money">$250</b><span>CAREER EARNINGS</span></div>
+<div class="pill"><b id="xp">0</b><span>XP</span></div>
+<div class="pill"><b id="rep">50</b><span>REPUTATION</span></div>
+<div class="pill"><b id="games">0</b><span>GAMES</span></div>
+</div>
+</header>
+<nav class="tabs">
+<button class="tab active" data-tab="career">Career</button>
+<button class="tab" data-tab="game">Work a Game</button>
+<button class="tab" data-tab="profile">Profile</button>
+<button class="tab" data-tab="rules">Rulebook</button>
+</nav>
+
+<section id="career" class="panel">
+<div class="grid">
+<div>
+<h2 id="rank">U8 Official</h2>
+<p class="muted" id="rankdesc">Learn positioning, signals, and game management.</p>
+<div class="cards">
+<div class="card"><small>LEVEL</small><div class="big" id="level">1</div></div>
+<div class="card"><small>SEASON</small><div class="big" id="season">1</div></div>
+<div class="card"><small>AVG. GAME</small><div class="big" id="avg">$25</div></div>
+</div>
+<br>
+<h3>Career Progress</h3>
+<div class="progress"><i id="careerbar" style="width:8%"></i></div>
+<p class="muted" id="next">Complete games to earn XP and unlock the next level.</p>
+</div>
+<div>
+<h3>Next Assignment</h3>
+<div class="card" id="assignment">
+<strong id="assignTitle">U8 House League</strong>
+<p class="muted" id="assignDesc">Low-pressure game. Focus on positioning.</p>
+<p><span class="badge" id="assignPay">$25 pay</span> <span class="badge" id="assignXP">+80 XP</span></p>
+<button class="btn primary" id="workBtn">Work This Game</button>
+</div>
+<br>
+<h3>Career Log</h3><div class="feed" id="careerLog"></div>
+</div>
+</div>
+</section>
+
+<section id="game" class="panel hidden">
+<div class="gamebar">
+<div><div class="score"><span id="homeScore">0</span> — <span id="awayScore">0</span></div><span class="muted" id="gameLevel">U8 HOUSE LEAGUE</span></div>
+<div class="callbox"><b id="gameClock">12:00</b><span>PERIOD 1</span></div>
+<div><span class="badge" id="officialPos">POSITION: LINESPERSON</span></div>
+</div>
+<canvas id="rink" width="1000" height="540"></canvas>
+<div class="callbuttons">
+<button class="btn primary" id="goodBtn">🟢 GOOD PLAY <small>(G)</small></button>
+<button class="btn red" id="offsideBtn">🚩 OFFSIDE <small>(O)</small></button>
+<button class="btn gold" id="icingBtn">🏒 ICING <small>(I)</small></button>
+<button class="btn" id="penaltyBtn">⚠️ PENALTY <small>(P)</small></button>
+</div>
+<p class="controls">Watch the puck and players. Make the call you think the official should make. Your timing and accuracy affect your rating.</p>
+<div class="grid" style="margin-top:12px">
+<div><h3>Official's Report</h3><div class="feed" id="gameFeed"></div></div>
+<div><h3>Game Rating</h3><div class="card"><div class="big" id="rating">—</div><p class="muted">Accuracy + timing + game management</p><div class="progress"><i id="ratingBar" style="width:0%"></i></div><br><button class="btn primary" id="finishBtn" disabled>Finish Game</button></div></div>
+</div>
+</section>
+
+<section id="profile" class="panel hidden">
+<h2>Official Profile</h2><p class="muted">Build your reputation and unlock higher-level assignments.</p>
+<div class="cards">
+<div class="card"><small>YEARS OFFICIATING</small><div class="big" id="profYears">1</div></div>
+<div class="card"><small>TOTAL GAMES</small><div class="big" id="profGames">0</div></div>
+<div class="card"><small>CAREER EARNINGS</small><div class="big" id="profMoney">$250</div></div>
+</div><br>
+<h3>Unlocked Levels</h3><div class="list" id="levelsList"></div>
+</section>
+
+<section id="rules" class="panel hidden">
+<h2>Quick Rulebook</h2><p class="muted">Simplified game rules used by this simulator.</p>
+<div class="list">
+<div class="row"><div><strong>Offside</strong><small>The puck must enter the attacking zone before attacking players.</small></div><span>🚩</span></div>
+<div class="row"><div><strong>Icing</strong><small>A team shoots the puck from its side of center and it travels beyond the opponent's goal line without being touched.</small></div><span>🏒</span></div>
+<div class="row"><div><strong>Penalty</strong><small>Illegal play or dangerous conduct can result in a penalty.</small></div><span>⚠️</span></div>
+<div class="row"><div><strong>Good Play</strong><small>Legal play with no stoppage required.</small></div><span>🟢</span></div>
+</div>
+</section>
+</div>
+<script>
+const ranks=[
+{name:"U8 Official",desc:"Learn positioning, signals, and game management.",pay:25,xp:80,need:0},
+{name:"U10 Official",desc:"Start managing faster games and clearer calls.",pay:30,xp:100,need:250},
+{name:"U12 Official",desc:"More speed, more pressure, better positioning.",pay:40,xp:120,need:600},
+{name:"U14 Official",desc:"Physical play and difficult situations begin to matter.",pay:50,xp:145,need:1100},
+{name:"U16 Official",desc:"Competitive hockey. Timing and communication are critical.",pay:65,xp:175,need:1750},
+{name:"U18 / Varsity",desc:"High-pressure games with experienced players.",pay:85,xp:210,need:2550},
+{name:"Juniors Linesperson",desc:"Fast hockey. Your positioning has to be sharp.",pay:110,xp:260,need:3500},
+{name:"College Development",desc:"Elite pace and professional-level expectations.",pay:145,xp:320,need:4800},
+{name:"College Official",desc:"You've reached the next level.",pay:200,xp:400,need:6500}
+];
+let state={xp:0,money:250,rep:50,games:0,season:1,level:0,score:0,correct:0,wrong:0,clock:720,play:null,active:false};
+let ctx=document.getElementById("rink").getContext("2d"),timer=null,raf=null;
+
+function $(id){return document.getElementById(id)}
+function save(){try{localStorage.setItem("rts_hockey",JSON.stringify(state))}catch(e){}}
+function load(){try{let s=JSON.parse(localStorage.getItem("rts_hockey"));if(s)state=Object.assign(state,s)}catch(e){}}
+function log(el,text){let d=document.createElement("div");d.textContent=text;el.prepend(d)}
+function update(){
+$("money").textContent="$"+state.money;$("xp").textContent=state.xp;$("rep").textContent=state.rep;$("games").textContent=state.games;
+let i=state.level,r=ranks[i],next=ranks[i+1];
+$("rank").textContent=r.name;$("rankdesc").textContent=r.desc;$("level").textContent=i+1;$("season").textContent=state.season;$("avg").textContent="$"+r.pay;
+$("careerbar").style.width=(next?Math.min(100,Math.max(4,(state.xp-r.need)/(next.need-r.need)*100):100)+"%";
+$("next").textContent=next?`${Math.max(0,next.need-state.xp)} XP until ${next.name}.`:"Top level reached.";
+$("assignTitle").textContent=r.name+" Assignment";$("assignDesc").textContent=r.desc;$("assignPay").textContent="$"+r.pay+" pay";$("assignXP").textContent="+"+r.xp+" XP";
+$("profGames").textContent=state.games;$("profMoney").textContent="$"+state.money;$("profYears").textContent=state.season;
+$("workBtn").textContent="Work This Game";
+let list=$("levelsList");list.innerHTML="";ranks.forEach((z,j)=>{let d=document.createElement("div");d.className="row";d.innerHTML=`<div><strong>${z.name}</strong><small>${z.need} XP required • $${z.pay}/game</small></div><span>${state.xp>=z.need?"🔓":"🔒"}</span>`;list.appendChild(d)});
+}
+function tab(name){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));document.querySelectorAll("section").forEach(s=>s.classList.toggle("hidden",s.id!==name))}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+
+function newPlay(){
+let types=["good","good","good","offside","icing","penalty"],type=types[Math.floor(Math.random()*types.length)];
+let puck=Math.random(),attacking=Math.random(),off=(attacking>.5&&puck<.48)||(attacking<.5&&puck>.52);
+if(type==="good")off=false;
+state.play={type:type==="offside"?"offside":type==="icing"?"icing":type==="penalty"?"penalty":"good",truth:type==="offside"?off:type};
+draw();
+}
+function draw(){
+let x=ctx,w=1000,h=540;x.clearRect(0,0,w,h);
+x.fillStyle="#e8f5fb";x.fillRect(0,0,w,h);x.strokeStyle="#c83232";x.lineWidth=12;x.strokeRect(10,10,w-20,h-20);
+x.fillStyle="#d6eaf3";x.fillRect(450,15,100,510);x.fillStyle="#2e6bc5";x.fillRect(265,15,9,510);x.fillRect(726,15,9,510);x.fillStyle="#d33";x.fillRect(495,15,10,510);
+x.strokeStyle="#d33";x.lineWidth=3;for(let X of [150,850])for(let Y of [150,390]){x.beginPath();x.arc(X,Y,55,0,Math.PI*2);x.stroke()}x.beginPath();x.arc(500,270,55,0,Math.PI*2);x.stroke();
+x.strokeStyle="#a94444";x.lineWidth=8;x.strokeRect(22,210,28,120);x.strokeRect(950,210,28,120);
+if(!state.active||!state.play)return;
+let p=state.play, puckX=180+Math.random()*640, playerX=150+Math.random()*700;
+ctx=puckX; x.fillStyle="#111";x.beginPath();x.arc(puckX,270,9,0,Math.PI*2);x.fill();
+function sk(X,Y,c,n){x.fillStyle=c;x.beginPath();x.arc(X,Y,22,0,Math.PI*2);x.fill();x.strokeStyle="#fff";x.lineWidth=2;x.stroke();x.fillStyle="#fff";x.font="bold 12px Arial";x.textAlign="center";x.fillText(n,X,Y+4)}
+sk(playerX,270,"#1769aa","A");sk(Math.max(90,Math.min(910,playerX+(Math.random()>.5?120:-120))),335,"#1769aa","A");sk(Math.random()>.5?820:180,160,"#c62828","D");sk(Math.random()>.5?820:180,380,"#c62828","D");
+x.fillStyle="#183047";x.font="bold 15px Arial";x.textAlign="center";x.fillText("BLUE LINE",269,38);x.fillText("BLUE LINE",730,38);
+}
+function startGame(){
+tab("game");state.active=true;state.score=0;state.correct=0;state.wrong=0;state.clock=720;$("homeScore").textContent=0;$("awayScore").textContent=0;$("gameFeed").innerHTML="";$("finishBtn").disabled=true;$("rating").textContent="—";$("ratingBar").style.width="0%";newPlay();
+clearInterval(timer);timer=setInterval(()=>{if(!state.active)return;state.clock--;let m=Math.floor(state.clock/60),s=state.clock%60;$("gameClock").textContent=`${m}:${String(s).padStart(2,"0")}`;if(state.clock<=0)finishGame()},1000);log($("gameFeed"),"Game started. Stay alert.");}
+function call(v){
+if(!state.active)return;let ok=v===state.play.truth;let pts=ok?100:-60;state.score=Math.max(0,state.score+pts);ok?state.correct++:state.wrong++;
+if(ok){state.rep=Math.min(100,state.rep+2);log($("gameFeed"),"✓ Correct call — good timing.");}else{state.rep=Math.max(0,state.rep-3);log($("gameFeed"),"✗ Missed call — review the play.");}
+if(Math.random()<.18)$("homeScore").textContent=Number($("homeScore").textContent)+(Math.random()<.5?1:0);
+let total=state.correct+state.wrong,acc=total?Math.round(state.correct/total*100):0;$("rating").textContent=acc+"%";$("ratingBar").style.width=acc+"%";newPlay();save();
+}
+function finishGame(){
+if(!state.active)return;state.active=false;clearInterval(timer);let total=state.correct+state.wrong,acc=total?state.correct/total:0,r=ranks[state.level],bonus=Math.round(r.pay*(.5+acc*.8));state.money+=bonus;state.xp+=Math.round(r.xp*(.5+acc));state.games++;
+if(state.rep>=70)state.xp+=25;
+while(state.level<ranks.length-1&&state.xp>=ranks[state.level+1].need){state.level++;log($("careerLog"),"🏆 Promotion unlocked: "+ranks[state.level].name)}
+$("finishBtn").disabled=false;log($("careerLog"),`Game #${state.games}: ${Math.round(acc*100)}% accuracy, $${bonus} earned.`);save();update();$("rating").textContent=Math.round(acc*100)+"% FINAL";draw();$("finishBtn").textContent="Game Complete";}
+
+$("workBtn").onclick=startGame;$("goodBtn").onclick=()=>call("good");$("offsideBtn").onclick=()=>call("offside");$("icingBtn").onclick=()=>call("icing");$("penaltyBtn").onclick=()=>call("penalty");$("finishBtn").onclick=()=>{if(state.active)finishGame()};
+
+document.addEventListener("keydown",e=>{if(!state.active)return;let k=e.key.toLowerCase();if(k==="g")call("good");if(k==="o")call("offside");if(k==="i")call("icing");if(k==="p")call("penalty")});
+load();update();draw();
+</script>
+</body>
+</html>
